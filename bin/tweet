@@ -1,0 +1,43 @@
+#!/usr/bin/env node
+
+var fs = require('fs');
+var exists = fs.existsSync;
+var join = require('path').join;
+var home = process.env.HOME;
+var dotfile = join(home, '.tweet');
+
+!exists(dotfile) && error("There's no ~/.tweet file!");
+
+var opts = read(dotfile);
+opts.error && error(opts.error);
+
+var twitter = require('ntwitter');
+
+var twit = new twitter({
+  consumer_key: opts.consumer_key,
+  consumer_secret: opts.consumer_secret,
+  access_token_key: opts.access_token_key,
+  access_token_secret: opts.access_token_secret
+});
+
+process.argv.splice(0,2);
+var status = process.argv.join(' ');
+!status && error("No status to update!");
+
+twit
+  .verifyCredentials(function (err, data) {
+    err && error(err);
+  })
+  .updateStatus(status, function (err, data) {
+    err && error(err); 
+    console.log("ok");
+  });
+
+function read (path) {
+  return JSON.parse(fs.readFileSync(path).toString() || '{"error": ".tweet file is empty"}');
+}
+
+function error (str) {
+  console.error("Error:", str, "");
+  process.exit(-1);
+}
