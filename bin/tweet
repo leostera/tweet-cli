@@ -21,7 +21,7 @@ var twit = new twitter({
 });
 
 process.argv.splice(0,2);
-var status = process.argv.join(' ');
+var status = '$ '+process.argv.join(' ');
 !status && error("No status to update!");
 
 twit
